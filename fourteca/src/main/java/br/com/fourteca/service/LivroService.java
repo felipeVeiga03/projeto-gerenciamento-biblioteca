@@ -1,7 +1,7 @@
 package br.com.fourteca.service;
 
 import br.com.fourteca.entity.Livro;
-import br.com.fourteca.exception.LivroJaCadastroadoException;
+import br.com.fourteca.exception.LivroJaCadastradoException;
 import br.com.fourteca.exception.LivroNaoEncontradoException;
 import br.com.fourteca.repository.LivroRepository;
 import br.com.fourteca.request.LivroRequest;
@@ -21,7 +21,7 @@ public class LivroService {
 
     public LivroResponse cadastrarLivro (LivroRequest livroRequest){
         if (this.livroRepository.existsByIsbn(livroRequest.getIsbn())) {
-            throw new LivroJaCadastroadoException();
+            throw new LivroJaCadastradoException();
         }
         Livro livro = new Livro(livroRequest.getTitulo(),
                 livroRequest.getAutor(),livroRequest.getIsbn(), livroRequest.getDisponivel());
@@ -67,7 +67,7 @@ public class LivroService {
     @Transactional
     public LivroResponse atualizarLivro(Integer id, LivroRequest livroRequest) {
         if (this.livroRepository.existsByIsbn(livroRequest.getIsbn())) {
-            throw new LivroJaCadastroadoException();
+            throw new LivroJaCadastradoException();
         }
         return livroRepository.findById(id)
                 .map(livro -> {

@@ -1,7 +1,7 @@
 package br.com.fourteca.service;
 
 import br.com.fourteca.entity.Livro;
-import br.com.fourteca.exception.LivroJaCadastroadoException;
+import br.com.fourteca.exception.LivroJaCadastradoException;
 import br.com.fourteca.exception.LivroNaoEncontradoException;
 import br.com.fourteca.repository.LivroRepository;
 import br.com.fourteca.request.LivroRequest;
@@ -58,7 +58,7 @@ class LivroServiceTest {
     void deveLancarExcecaoQuandoLivroJaExiste() {
         when(livroRepository.existsByIsbn(anyString())).thenReturn(true);
 
-        assertThrows(LivroJaCadastroadoException.class, () -> livroService.cadastrarLivro(livroRequest));
+        assertThrows(LivroJaCadastradoException.class, () -> livroService.cadastrarLivro(livroRequest));
         verify(livroRepository, never()).save(any(Livro.class));
     }
 
