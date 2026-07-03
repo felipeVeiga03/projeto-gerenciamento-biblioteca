@@ -6,7 +6,6 @@ import br.com.fourteca.exception.EmprestimoInexistenteException;
 import br.com.fourteca.exception.EmprestimoJaDevolvidoException;
 import br.com.fourteca.exception.LivroIndisponivelParaEmprestimoException;
 import br.com.fourteca.exception.LivroNaoEncontradoException;
-import br.com.fourteca.exception.NenhumEmprestimoEncontradoException;
 import br.com.fourteca.repository.EmprestimoRepository;
 import br.com.fourteca.repository.LivroRepository;
 import br.com.fourteca.request.EmprestimoRequest;
@@ -71,9 +70,6 @@ public class EmprestimoService {
 
     public List<EmprestimoResponse> listarEmprestimos() {
         List<Emprestimo> emprestimos = emprestimoRepository.findAll();
-        if (emprestimos.isEmpty()) {
-            throw new NenhumEmprestimoEncontradoException();
-        }
         return emprestimos.stream()
                 .map(emprestimo -> EmprestimoResponse.builder()
                         .idEmprestimo(emprestimo.getIdEmprestimo())

@@ -66,14 +66,10 @@ public class LivroService {
 
     @Transactional
     public LivroResponse atualizarLivro(Integer id, LivroRequest livroRequest) {
-        if (this.livroRepository.existsByIsbn(livroRequest.getIsbn())) {
-            throw new LivroJaCadastradoException();
-        }
         return livroRepository.findById(id)
                 .map(livro -> {
                     livro.setTitulo(livroRequest.getTitulo());
                     livro.setAutor(livroRequest.getAutor());
-                    livro.setIsbn(livroRequest.getIsbn());
                     livro.setDisponivel(livroRequest.getDisponivel());
                     Livro livroAtualizado = livroRepository.save(livro);
                     return LivroResponse.builder()

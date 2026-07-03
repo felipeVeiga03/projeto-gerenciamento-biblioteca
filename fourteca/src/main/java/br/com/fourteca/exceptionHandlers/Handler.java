@@ -51,6 +51,7 @@ public class Handler {
         ErrorObject<List<String>> errorObject = ErrorObject.<List<String>>builder()
                 .codError(ErrorEnum.ERRO_VALIDACAO.getErrorCode())
                 .msgError("Erro de validação nos campos preenchidos.")
+                .value(errosValidacao)
                 .build();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
