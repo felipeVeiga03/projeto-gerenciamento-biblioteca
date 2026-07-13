@@ -1,14 +1,15 @@
 package br.com.fourteca.service;
 
+import br.com.fourteca.config.Auditable;
 import br.com.fourteca.entity.Livro;
 import br.com.fourteca.exception.LivroJaCadastradoException;
 import br.com.fourteca.exception.LivroNaoEncontradoException;
 import br.com.fourteca.repository.LivroRepository;
 import br.com.fourteca.request.LivroRequest;
 import br.com.fourteca.response.LivroResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,17 +20,22 @@ public class LivroService {
 
     private final LivroRepository livroRepository;
 
-    public LivroResponse cadastrarLivro (LivroRequest livroRequest){
-        if (this.livroRepository.existsByIsbn(livroRequest.getIsbn())) {
+    @Transactional
+    @Auditable(acao = "CREATE")
+    public LivroResponse cadastrarLivro(LivroRequest livroRequest) {
+        if (livroRepository.existsByIsbn(livroRequest.getIsbn())) {
             throw new LivroJaCadastradoException();
         }
-        Livro livro = new Livro(livroRequest.getTitulo(),
-                livroRequest.getAutor(),livroRequest.getIsbn(), livroRequest.getDisponivel());
-        var livroSalvo = livroRepository.save(livro);
-        return LivroResponse.builder().idLivro(livroSalvo.getIdLivro()).autor(livroSalvo.getAutor())
-                .titulo(livroSalvo.getTitulo()).isbn(livroSalvo.getIsbn()).disponivel(livroSalvo.getDisponivel()).build();
+        Livro livro = new Livro();
+        livro.setTitulo(livroRequest.getTitulo());
+        livro.setAutor(livroRequest.getAutor());
+        livro.setIsbn(livroRequest.getIsbn());
+        livro.setDisponivel(livroRequest.getDisponivel());
+        
+        return toResponse(livroRepository.save(livro));
     }
 
+    @Transactional(readOnly = true)
     public List<LivroResponse> listarLivros(String autor, Boolean disponivel) {
         List<Livro> livros;
         if (autor != null && disponivel != null) {
@@ -41,53 +47,45 @@ public class LivroService {
         } else {
             livros = livroRepository.findAll();
         }
-        return livros.stream()
-                .map(livro -> LivroResponse.builder()
-                        .idLivro(livro.getIdLivro())
-                        .autor(livro.getAutor())
-                        .titulo(livro.getTitulo())
-                        .isbn(livro.getIsbn())
-                        .disponivel(livro.getDisponivel())
-                        .build())
-                .collect(Collectors.toList());
+        return livros.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public LivroResponse buscarLivroPorId(Integer id) {
+    @Transactional(readOnly = true)
+    public LivroResponse buscarLivroPorId(Long id) {
         return livroRepository.findById(id)
-                .map(livro -> LivroResponse.builder()
-                        .idLivro(livro.getIdLivro())
-                        .autor(livro.getAutor())
-                        .titulo(livro.getTitulo())
-                        .isbn(livro.getIsbn())
-                        .disponivel(livro.getDisponivel())
-                        .build())
+                .map(this::toResponse)
                 .orElseThrow(LivroNaoEncontradoException::new);
     }
 
     @Transactional
-    public LivroResponse atualizarLivro(Integer id, LivroRequest livroRequest) {
+    @Auditable(acao = "UPDATE")
+    public LivroResponse atualizarLivro(Long id, LivroRequest livroRequest) {
         return livroRepository.findById(id)
                 .map(livro -> {
                     livro.setTitulo(livroRequest.getTitulo());
                     livro.setAutor(livroRequest.getAutor());
                     livro.setDisponivel(livroRequest.getDisponivel());
-                    Livro livroAtualizado = livroRepository.save(livro);
-                    return LivroResponse.builder()
-                            .idLivro(livroAtualizado.getIdLivro())
-                            .autor(livroAtualizado.getAutor())
-                            .titulo(livroAtualizado.getTitulo())
-                            .isbn(livroAtualizado.getIsbn())
-                            .disponivel(livroAtualizado.getDisponivel())
-                            .build();
+                    return toResponse(livroRepository.save(livro));
                 })
                 .orElseThrow(LivroNaoEncontradoException::new);
-
     }
 
-    public void deletarLivro(Integer id) {
+    @Transactional
+    @Auditable(acao = "DELETE")
+    public void deletarLivro(Long id) {
         if (!livroRepository.existsById(id)) {
             throw new LivroNaoEncontradoException();
         }
         livroRepository.deleteById(id);
+    }
+
+    private LivroResponse toResponse(Livro livro) {
+        return LivroResponse.builder()
+                .idLivro(livro.getId())
+                .autor(livro.getAutor())
+                .titulo(livro.getTitulo())
+                .isbn(livro.getIsbn())
+                .disponivel(livro.isDisponivel())
+                .build();
     }
 }

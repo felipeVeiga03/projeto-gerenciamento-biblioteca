@@ -11,12 +11,11 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Livro")
+@Table(name = "livro")
 public class Livro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_livro")
-    private Integer idLivro;
+    private Long id;
 
     @Column(name = "titulo")
     private String titulo;
@@ -24,19 +23,15 @@ public class Livro {
     @Column(name = "autor")
     private String autor;
 
-    @Column(name = "isbn")
+    @Column(name = "isbn", unique = true)
     private String isbn;
 
     @Column(name = "disponivel")
-    private Boolean disponivel;
+    private boolean disponivel;
 
     @OneToMany(mappedBy = "livro")
     private List<Emprestimo> emprestimos;
 
-    public Livro(String titulo, String autor, String isbn, boolean disponivel) {
-        this.titulo = titulo;
-        this.autor = autor;
-        this.isbn = isbn;
-        this.disponivel = disponivel;
+    public Livro(String livroTeste, String autorTeste, String number, boolean b) {
     }
 }

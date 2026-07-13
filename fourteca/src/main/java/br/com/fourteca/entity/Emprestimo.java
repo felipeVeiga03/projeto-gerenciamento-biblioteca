@@ -1,25 +1,21 @@
 package br.com.fourteca.entity;
 
+import br.com.fourteca.enums.StatusMulta;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Emprestimo")
+@Table(name = "emprestimo")
 public class Emprestimo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_emprestimo")
-    private Integer idEmprestimo;
-
-    @Column(name = "nome_leitor")
-    private String nomeLeitor;
+    private Long id;
 
     @Column(name = "data_emprestimo")
     private LocalDate dataEmprestimo;
@@ -33,4 +29,19 @@ public class Emprestimo {
     @ManyToOne
     @JoinColumn(name = "id_livro")
     private Livro livro;
+
+    @ManyToOne
+    @JoinColumn(name = "id_leitor")
+    private Leitores leitor;
+
+    @Column(name = "dias_atraso")
+    private Integer diasAtraso;
+
+    @Column(name = "valor_multa")
+    private BigDecimal valorMulta;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_multa")
+    private StatusMulta statusMulta;
+
 }

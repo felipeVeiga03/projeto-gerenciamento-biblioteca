@@ -6,10 +6,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class LivroResponse {
-    private Integer idLivro;
-    private String autor;
+    private Long idLivro;
     private String titulo;
+    private String autor;
     private String isbn;
     private boolean disponivel;
-
 }

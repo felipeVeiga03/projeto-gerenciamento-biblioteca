@@ -1,8 +1,23 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-  h2:
-    console:
-      enabled: true
+  profiles:
+    active: dev
+
+server:
+  servlet:
+    context-path: /api/v1
+
+fourteca:
+  emprestimo:
+    dias-por-tipo-leitor:
+      ALUNO: 7
+      PROFESSOR: 30
+      COMUNIDADE: 14
+    max-livros-por-tipo-leitor:
+      ALUNO: 2
+      PROFESSOR: 5
+      COMUNIDADE: 1
+    taxa-multa-diaria: 2.50
+
+jwt:
+  secret: sua-chave-secreta-super-longa-e-dificil-de-adivinhar-deve-ser-mudada-em-producao
+  expiration: 86400000 # 24 horas em milissegundos

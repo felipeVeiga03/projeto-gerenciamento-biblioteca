@@ -5,13 +5,16 @@ import br.com.fourteca.exception.LivroJaCadastradoException;
 import br.com.fourteca.exception.LivroNaoEncontradoException;
 import br.com.fourteca.repository.LivroRepository;
 import br.com.fourteca.request.LivroRequest;
+import br.com.fourteca.response.LivroResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,8 +41,13 @@ class LivroServiceTest {
                 .isbn("978-85-9508-080-0")
                 .disponivel(true)
                 .build();
-        livro = new Livro("O Senhor dos Anéis", "J.R.R. Tolkien", "978-85-9508-080-0", true);
-        livro.setIdLivro(1);
+
+        livro = new Livro();
+        livro.setId(1L);
+        livro.setTitulo("O Senhor dos Anéis");
+        livro.setAutor("J.R.R. Tolkien");
+        livro.setIsbn("978-85-9508-080-0");
+        livro.setDisponivel(true);
     }
 
     @Test
@@ -47,7 +55,7 @@ class LivroServiceTest {
         when(livroRepository.existsByIsbn(anyString())).thenReturn(false);
         when(livroRepository.save(any(Livro.class))).thenReturn(livro);
 
-        var response = livroService.cadastrarLivro(livroRequest);
+        LivroResponse response = livroService.cadastrarLivro(livroRequest);
 
         assertNotNull(response);
         assertEquals(livro.getTitulo(), response.getTitulo());
@@ -63,59 +71,91 @@ class LivroServiceTest {
     }
 
     @Test
-    void deveRetornarTodosOsLivros() {
+    void deveListarTodosOsLivros() {
         when(livroRepository.findAll()).thenReturn(Collections.singletonList(livro));
-
         var response = livroService.listarLivros(null, null);
-
         assertFalse(response.isEmpty());
         assertEquals(1, response.size());
     }
 
     @Test
-    void deveRetornarUmLivroComSucesso() {
-        when(livroRepository.findById(anyInt())).thenReturn(Optional.of(livro));
+    void deveListarLivrosPorAutor() {
+        when(livroRepository.findByAutor("J.R.R. Tolkien")).thenReturn(List.of(livro));
+        var response = livroService.listarLivros("J.R.R. Tolkien", null);
+        assertFalse(response.isEmpty());
+        assertEquals("J.R.R. Tolkien", response.get(0).getAutor());
+    }
 
-        var response = livroService.buscarLivroPorId(1);
+    @Test
+    void deveListarLivrosPorDisponibilidade() {
+        when(livroRepository.findByDisponivel(true)).thenReturn(List.of(livro));
+        var response = livroService.listarLivros(null, true);
+        assertFalse(response.isEmpty());
+        assertTrue(response.get(0).isDisponivel());
+    }
 
+    @Test
+    void deveListarLivrosPorAutorEDisponibilidade() {
+        when(livroRepository.findByAutorAndDisponivel("J.R.R. Tolkien", true)).thenReturn(List.of(livro));
+        var response = livroService.listarLivros("J.R.R. Tolkien", true);
+        assertFalse(response.isEmpty());
+        assertEquals("J.R.R. Tolkien", response.get(0).getAutor());
+        assertTrue(response.get(0).isDisponivel());
+    }
+
+    @Test
+    void deveBuscarLivroPorIdComSucesso() {
+        when(livroRepository.findById(anyLong())).thenReturn(Optional.of(livro));
+        var response = livroService.buscarLivroPorId(1L);
         assertNotNull(response);
         assertEquals(livro.getTitulo(), response.getTitulo());
     }
 
     @Test
-    void DeveLancarExcecaoQuandoLivroNaoEncontrado() {
-        when(livroRepository.findById(anyInt())).thenReturn(Optional.empty());
-
-        assertThrows(LivroNaoEncontradoException.class, () -> livroService.buscarLivroPorId(1));
+    void deveLancarExcecaoAoBuscarLivroPorIdInexistente() {
+        when(livroRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(LivroNaoEncontradoException.class, () -> livroService.buscarLivroPorId(1L));
     }
 
     @Test
-    void deveAtualizarUmLivroComSucesso() {
-        when(livroRepository.findById(anyInt())).thenReturn(Optional.of(livro));
-        when(livroRepository.save(any(Livro.class))).thenReturn(livro);
+    void deveAtualizarUmLivroComSucessoSemAlterarIsbn() {
+        LivroRequest requestDeAtualizacao = LivroRequest.builder()
+                .titulo("O Hobbit")
+                .autor("J.R.R. Tolkien")
+                .disponivel(false)
+                .build();
 
-        var response = livroService.atualizarLivro(1, livroRequest);
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livro));
+        when(livroRepository.save(any(Livro.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertNotNull(response);
-        assertEquals(livro.getTitulo(), response.getTitulo());
-        verify(livroRepository, times(1)).save(any(Livro.class));
+        livroService.atualizarLivro(1L, requestDeAtualizacao);
+
+        ArgumentCaptor<Livro> livroCaptor = ArgumentCaptor.forClass(Livro.class);
+        verify(livroRepository).save(livroCaptor.capture());
+        Livro livroSalvo = livroCaptor.getValue();
+
+        assertEquals("O Hobbit", livroSalvo.getTitulo());
+        assertEquals("978-85-9508-080-0", livroSalvo.getIsbn()); // Garante que o ISBN não foi alterado
+    }
+    
+    @Test
+    void deveLancarExcecaoAoAtualizarLivroInexistente() {
+        when(livroRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThrows(LivroNaoEncontradoException.class, () -> livroService.atualizarLivro(99L, livroRequest));
     }
 
     @Test
     void deveDeletarUmLivroComSucesso() {
-        when(livroRepository.existsById(anyInt())).thenReturn(true);
-        doNothing().when(livroRepository).deleteById(anyInt());
-
-        livroService.deletarLivro(1);
-
-        verify(livroRepository, times(1)).deleteById(anyInt());
+        when(livroRepository.existsById(anyLong())).thenReturn(true);
+        doNothing().when(livroRepository).deleteById(anyLong());
+        livroService.deletarLivro(1L);
+        verify(livroRepository, times(1)).deleteById(anyLong());
     }
 
     @Test
-    void deveLancarExcecaoQuandoLivroNaoEncontrado() {
-        when(livroRepository.existsById(anyInt())).thenReturn(false);
-
-        assertThrows(LivroNaoEncontradoException.class, () -> livroService.deletarLivro(1));
-        verify(livroRepository, never()).deleteById(anyInt());
+    void deveLancarExcecaoAoDeletarLivroInexistente() {
+        when(livroRepository.existsById(anyLong())).thenReturn(false);
+        assertThrows(LivroNaoEncontradoException.class, () -> livroService.deletarLivro(1L));
+        verify(livroRepository, never()).deleteById(anyLong());
     }
 }
