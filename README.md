@@ -31,7 +31,7 @@ Utiliza o **H2 Database** puramente em memória (`jdbc:h2:mem:testdb`). O banco 
 
 ---
 
-## 🚀 Como Executar o Projeto
+##  Como Executar o Projeto
 
 1. **Clone o repositório:**
    ```bash
