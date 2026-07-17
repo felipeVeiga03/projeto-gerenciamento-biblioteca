@@ -1,4 +1,4 @@
-# 📚 Sistema de Gerenciamento de Biblioteca (API REST)
+#  Sistema de Gerenciamento de Biblioteca (API REST)
 
 ![Java CI with Maven](https://github.com/SEU_USUARIO/SEU_REPOSITORIO/actions/workflows/ci.yml/badge.svg)
 
@@ -6,7 +6,7 @@ Uma API RESTful completa e robusta para o gerenciamento operacional de uma bibli
 
 ---
 
-## 🛠️ Tecnologias e Pré-requisitos
+##  Tecnologias e Pré-requisitos
 
 Para rodar e testar este projeto localmente, você precisará de:
 
@@ -16,17 +16,17 @@ Para rodar e testar este projeto localmente, você precisará de:
 
 ---
 
-## ⚙️ Arquitetura e Configurações (Profiles)
+##  Arquitetura e Configurações (Profiles)
 
 O projeto está isolado e estruturado em dois ambientes distintos através de **Spring Profiles**:
 
-### 📦 Desenvolvimento (`dev`)
+###  Desenvolvimento (`dev`)
 Utiliza o banco de dados **H2 Database** configurado para persistência de dados em arquivo local. Os dados não são perdidos ao reiniciar a aplicação.
 - **Arquivo local:** `./data/bibliotecadb`
 - **H2 Console:** Disponível em `http://localhost:8080/h2-console`
 - **Versionamento:** Banco estruturado e evoluído via scripts automatizados do **Flyway** (`src/main/resources/db/migration`).
-
-### 🧪 Testes (`test`)
+  
+### Testes (`test`)
 Utiliza o **H2 Database** puramente em memória (`jdbc:h2:mem:testdb`). O banco de dados é zerado a cada execução para isolar os testes de integração.
 
 ---
